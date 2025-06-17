@@ -3,32 +3,39 @@ import cv2
 # Cargar el clasificador de rostros frontales
 cara_cascade = cv2.CascadeClassifier(cv2.data.haarcascades + 'haarcascade_frontalface_default.xml')
 
-# Activar la cámara
-cam = cv2.VideoCapture(0)
+# Cargar la imagen desde el archivo "imagen.jpg"
+# Asegúrate de que "imagen.jpg" esté en la misma carpeta que tu script, o proporciona la ruta completa.
+imagen = cv2.imread("imagen.jpg")
 
-# Bucle infinito para leer fotogramas de la cámara
-while True:
-    ret, frame = cam.read()
-    if not ret:
-        break
+# Verificar si la imagen se cargó correctamente
+if imagen is None:
+    print("Error: No se pudo cargar la imagen. Asegúrate de que 'imagen.jpg' exista y la ruta sea correcta.")
+    exit() # Salir del programa si no se carga la imagen
 
-    # Convertir el fotograma a escala de grises
-    gris = cv2.cvtColor(frame, cv2.COLOR_BGR2GRAY)
+# Convertir la imagen a escala de grises
+gris = cv2.cvtColor(imagen, cv2.COLOR_BGR2GRAY)
 
-    # Detectar rostros en el fotograma
-    caras = cara_cascade.detectMultiScale(gris, 1.1, 4)
+# Detectar rostros en la imagen
+# Los parámetros scaleFactor y minNeighbors pueden ajustarse para mejorar la detección.
+caras = cara_cascade.detectMultiScale(gris, 1.1, 4)
 
-    # Dibujar rectángulos alrededor de cada rostro detectado
-    for (x, y, w, h) in caras:
-        cv2.rectangle(frame, (x, y), (x + w, y + h), (0, 255, 0), 2)
+# Aplicar Canny para detectar bordes
+# Los parámetros 100 y 200 son los umbrales inferior y superior para el algoritmo Canny.
+bordes = cv2.Canny(gris, 100, 200)
 
-    # Mostrar la imagen con los rostros detectados
-    cv2.imshow("Deteccion de Rostros", frame)
+# Dibujar rectángulos alrededor de cada rostro detectado
+# Se dibuja sobre la imagen original a color.
+for (x, y, w, h) in caras:
+    cv2.rectangle(imagen, (x, y), (x + w, y + h), (0, 255, 0), 2) # Rectángulo verde
 
-    # Presiona 'q' para salir
-    if cv2.waitKey(1) & 0xFF == ord('q'):
-        break
+# Mostrar la imagen original con los rostros detectados
+cv2.imshow("Deteccion de Rostros en Imagen", imagen)
 
-# Liberar recursos
-cam.release()
+# Mostrar los bordes detectados (Canny) en una ventana separada
+cv2.imshow("Bordes Detectados (Canny) en Imagen", bordes)
+
+# Esperar hasta que el usuario presione una tecla para cerrar las ventanas
+cv2.waitKey(0)
+
+# Cerrar todas las ventanas de OpenCV
 cv2.destroyAllWindows()
